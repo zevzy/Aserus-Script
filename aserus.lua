@@ -263,19 +263,30 @@ addChannel("Information", function()
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = infoBox
 
+	-- Scrolling frame for long text
+	local scrollFrame = Instance.new("ScrollingFrame")
+	scrollFrame.Size = UDim2.new(1,-20,0,150)
+	scrollFrame.Position = UDim2.new(0,10,0,50)
+	scrollFrame.BackgroundTransparency = 1
+	scrollFrame.BorderSizePixel = 0
+	scrollFrame.CanvasSize = UDim2.new(0,0,0,440) -- zwiększone, żeby zmieścił się podpis
+	scrollFrame.ScrollBarThickness = 6
+	scrollFrame.Parent = infoBox
+
 	local description = Instance.new("TextLabel")
-	description.Size = UDim2.new(1,-20,0,80)
-	description.Position = UDim2.new(0,10,0,50)
+	description.Size = UDim2.new(1,-10,0,440) -- dopasowane do CanvasSize
+	description.Position = UDim2.new(0,0,0,0)
 	description.BackgroundTransparency = 1
-	description.Text = "This script is still in development (beta).\n\nIf you want to help or share ideas, contact me on Discord: kyllersv_"
+	description.Text = "This script is currently in beta and mainly designed\nas an Admin Panel for Brookhaven (works in any Roblox game).\n\nBrookhaven security prevents player trolling features:\n- Replication Filtering\n- Server Authority\n- Remote Validation\n- Integrity Checks\n\nBecause of this, actions such as Fling cannot affect other players.\nFling works only for the Local Player, since local physics and collisions\ndo not replicate to the server.\n\nFuture updates will focus on stability and expanding local features.\n\n---\nAuthor: !zevzy\nDiscord: kyllersv_\nPolish programmer"
 	description.TextColor3 = Color3.fromRGB(230,235,255)
 	description.TextWrapped = true
 	description.Font = Enum.Font.Gotham
 	description.TextSize = 14
 	description.TextXAlignment = Enum.TextXAlignment.Left
 	description.TextYAlignment = Enum.TextYAlignment.Top
-	description.Parent = infoBox
+	description.Parent = scrollFrame
 end)
+
 
 -- === Fun channel (Speed & Jump) ===
 addChannel("Fun", function()
@@ -370,6 +381,12 @@ addChannel("Fun", function()
 		end
 	end)
 end)
+
+-- === Troll channel ===
+
+
+
+
 
 -- === People channel ===
 addChannel("People", function()
