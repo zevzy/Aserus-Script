@@ -1,19 +1,20 @@
+--=== SERVICES ===--
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 
--- GUI
+--=== GUI ROOT ===--
 local gui = Instance.new("ScreenGui")
 gui.Name = "ArdeluxGUI"
 gui.Parent = player:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 
--- === STYL / UTIL ===
+--=== UTIL ===--
 local function addCorner(inst, r) Instance.new("UICorner", inst).CornerRadius = UDim.new(0, r or 8) end
-
 local function hoverify(btn, baseColor, hoverColor, textBase, textHover)
 	btn.AutoButtonColor = false
 	btn.BackgroundColor3 = baseColor
@@ -27,62 +28,84 @@ local function hoverify(btn, baseColor, hoverColor, textBase, textHover)
 	end)
 end
 
--- === MAIN FRAME ===
+-- Roblox-like toast (prawy-dolny róg)
+local function showToast(msg)
+	local toast = Instance.new("Frame")
+	toast.AnchorPoint = Vector2.new(1,1)
+	toast.Size = UDim2.new(0, 320, 0, 56)
+	toast.Position = UDim2.new(1, -16, 1, -16)
+	toast.BackgroundColor3 = Color3.fromRGB(28,28,32)
+	toast.Parent = gui
+	addCorner(toast, 10)
+
+	local top = Instance.new("Frame")
+	top.Size = UDim2.new(1,0,0,3)
+	top.BackgroundColor3 = Color3.fromRGB(88,130,255)
+	top.BorderSizePixel = 0
+	top.Parent = toast
+	addCorner(top, 3)
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1,-16,1,-10)
+	label.Position = UDim2.new(0,8,0,6)
+	label.BackgroundTransparency = 1
+	label.Text = msg
+	label.TextColor3 = Color3.fromRGB(235,235,245)
+	label.Font = Enum.Font.GothamSemibold
+	label.TextSize = 14
+	label.TextWrapped = true
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
+	label.Parent = toast
+
+	toast.BackgroundTransparency = 1
+	label.TextTransparency = 1
+	top.BackgroundTransparency = 1
+	TweenService:Create(toast, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
+	TweenService:Create(label, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
+	TweenService:Create(top, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
+
+	task.delay(3, function()
+		TweenService:Create(toast, TweenInfo.new(0.35), {BackgroundTransparency = 1}):Play()
+		TweenService:Create(label, TweenInfo.new(0.35), {TextTransparency = 1}):Play()
+		TweenService:Create(top, TweenInfo.new(0.35), {BackgroundTransparency = 1}):Play()
+		task.wait(0.4)
+		toast:Destroy()
+	end)
+end
+
+--=== MAIN FRAME (większe + prawie czarne) ===--
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 500, 0, 280)
-mainFrame.Position = UDim2.new(0.25, 0, 0.25, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 32)
+mainFrame.Size = UDim2.new(0, 620, 0, 360)
+mainFrame.Position = UDim2.new(0.5, -310, 0.5, -180)
+mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = gui
-addCorner(mainFrame, 12)
+addCorner(mainFrame, 14)
 
--- (USUNIĘTO BLOK "cień" z ImageLabel Shadow)
-
--- gradient na tle
-local bgGrad = Instance.new("UIGradient")
-bgGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 60, 140)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 35, 140))
-})
-bgGrad.Rotation = 35
-bgGrad.Parent = mainFrame
-
--- === TITLE BAR ===
+--=== TITLE BAR (executor w tytule) ===--
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1,0,0,34)
-titleBar.BackgroundColor3 = Color3.fromRGB(28, 30, 45)
+titleBar.Size = UDim2.new(1,0,0,36)
+titleBar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
-addCorner(titleBar, 12)
+addCorner(titleBar, 14)
 
-local titleGrad = Instance.new("UIGradient")
-titleGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(55, 85, 200)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 85, 220))
-})
-titleGrad.Rotation = 90
-titleGrad.Transparency = NumberSequence.new{
-	NumberSequenceKeypoint.new(0, 0.25),
-	NumberSequenceKeypoint.new(1, 0.25)
-}
-titleGrad.Parent = titleBar
-
--- === DETEKCJA EXECUTORA (pokazywana z LEWEJ, przy nazwie) ===
 local executorName = "Unknown"
 pcall(function()
-    if getexecutorname then
-        executorName = getexecutorname()
-    elseif identifyexecutor then
-        local n, v = identifyexecutor()
-        executorName = n .. (v and (" v"..v) or "")
-    end
+	if getexecutorname then
+		executorName = getexecutorname()
+	elseif identifyexecutor then
+		local n, v = identifyexecutor()
+		executorName = n .. (v and (" v"..v) or "")
+	end
 end)
 
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1,-70,1,0)
-titleText.Position = UDim2.new(0,10,0,0)
+titleText.Position = UDim2.new(0,12,0,0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "Aserus | Brookhaven RP Script | Executor: "..executorName..""
+titleText.Text = "Aserus | Brookhaven RP Script  |  Executor: "..executorName
 titleText.TextColor3 = Color3.fromRGB(245,245,255)
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.Font = Enum.Font.GothamBold
@@ -92,7 +115,7 @@ titleText.Parent = titleBar
 -- Minimize & close
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0,26,0,26)
-minimizeBtn.Position = UDim2.new(1,-62,0,4)
+minimizeBtn.Position = UDim2.new(1,-62,0,5)
 minimizeBtn.BackgroundColor3 = Color3.fromRGB(70,110,255)
 minimizeBtn.Text = "–"
 minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
@@ -105,7 +128,7 @@ hoverify(minimizeBtn, Color3.fromRGB(70,110,255), Color3.fromRGB(95,135,255), Co
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,26,0,26)
-closeBtn.Position = UDim2.new(1,-32,0,4)
+closeBtn.Position = UDim2.new(1,-32,0,5)
 closeBtn.BackgroundColor3 = Color3.fromRGB(235,70,90)
 closeBtn.Text = "X"
 closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
@@ -116,43 +139,27 @@ closeBtn.Parent = titleBar
 addCorner(closeBtn, 6)
 hoverify(closeBtn, Color3.fromRGB(235,70,90), Color3.fromRGB(255,110,130), Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,255))
 
--- === PANELS ===
+--=== PANELS ===--
 local leftPanel = Instance.new("Frame")
-leftPanel.Size = UDim2.new(0.3,0,1,-34)
-leftPanel.Position = UDim2.new(0,0,0,34)
-leftPanel.BackgroundColor3 = Color3.fromRGB(30, 33, 48)
+leftPanel.Size = UDim2.new(0.3,0,1,-36)
+leftPanel.Position = UDim2.new(0,0,0,36)
+leftPanel.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
 leftPanel.BorderSizePixel = 0
 leftPanel.Parent = mainFrame
-addCorner(leftPanel, 10)
-
-local leftGrad = Instance.new("UIGradient")
-leftGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 45, 80)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 35, 60))
-})
-leftGrad.Rotation = 90
-leftGrad.Parent = leftPanel
+addCorner(leftPanel, 12)
 
 local uiList = Instance.new("UIListLayout")
 uiList.SortOrder = Enum.SortOrder.LayoutOrder
-uiList.Padding = UDim.new(0,6)
+uiList.Padding = UDim.new(0,8)
 uiList.Parent = leftPanel
 
 local rightPanel = Instance.new("Frame")
-rightPanel.Size = UDim2.new(0.7,0,1,-34)
-rightPanel.Position = UDim2.new(0.3,0,0,34)
-rightPanel.BackgroundColor3 = Color3.fromRGB(24, 26, 38)
+rightPanel.Size = UDim2.new(0.7,0,1,-36)
+rightPanel.Position = UDim2.new(0.3,0,0,36)
+rightPanel.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
 rightPanel.BorderSizePixel = 0
 rightPanel.Parent = mainFrame
-addCorner(rightPanel, 10)
-
-local rightGrad = Instance.new("UIGradient")
-rightGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(28, 35, 70)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 24, 48))
-})
-rightGrad.Rotation = 90
-rightGrad.Parent = rightPanel
+addCorner(rightPanel, 12)
 
 -- Minimize logic
 local minimized = false
@@ -162,7 +169,7 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	if minimized then
 		leftPanel.Visible = false
 		rightPanel.Visible = false
-		mainFrame:TweenSize(UDim2.new(originalSize.X.Scale,originalSize.X.Offset,0,34),"Out","Quad",0.25,true)
+		mainFrame:TweenSize(UDim2.new(originalSize.X.Scale,originalSize.X.Offset,0,36),"Out","Quad",0.25,true)
 	else
 		mainFrame:TweenSize(originalSize,"Out","Quad",0.25,true,function()
 			leftPanel.Visible = true
@@ -172,19 +179,15 @@ minimizeBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Close GUI
-closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy()
-end)
+closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
 -- Dragging GUI
 local dragging, dragInput, dragStart, startPos
 local function update(input)
 	local delta = input.Position - dragStart
 	mainFrame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
+		startPos.X.Scale, startPos.X.Offset + delta.X,
+		startPos.Y.Scale, startPos.Y.Offset + delta.Y
 	)
 end
 titleBar.InputBegan:Connect(function(input)
@@ -193,61 +196,52 @@ titleBar.InputBegan:Connect(function(input)
 		dragStart = input.Position
 		startPos = mainFrame.Position
 		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
 		end)
 	end
 end)
 titleBar.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
+	if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
 end)
 UIS.InputChanged:Connect(function(input)
-	if dragging and input == dragInput then
-		update(input)
-	end
+	if dragging and input == dragInput then update(input) end
 end)
 
--- === CHANNELS SYSTEM ===
+--=== CHANNELS SYSTEM ===--
 local channels = {}
 local function showChannel(name)
 	for _, child in pairs(rightPanel:GetChildren()) do
-		if not child:IsA("UICorner") and not child:IsA("UIGradient") then
+		if not child:IsA("UICorner") then
 			child:Destroy()
 		end
 	end
-	if channels[name] then
-		channels[name]()
-	end
+	if channels[name] then channels[name]() end
 end
 
 local function addChannel(name, callback)
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1,0,0,32)
-	btn.BackgroundColor3 = Color3.fromRGB(48, 60, 130)
+	btn.Size = UDim2.new(1,0,0,34)
+	-- jaśniejszy odcień dla kategorii
+	btn.BackgroundColor3 = Color3.fromRGB(52, 58, 85)
 	btn.TextColor3 = Color3.fromRGB(245,245,255)
 	btn.Text = "•  "..name
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 14
 	btn.BorderSizePixel = 0
 	btn.Parent = leftPanel
-	addCorner(btn, 8)
-	hoverify(btn, Color3.fromRGB(48, 60, 130), Color3.fromRGB(70, 85, 170), Color3.fromRGB(245,245,255), Color3.fromRGB(255,255,255))
+	addCorner(btn, 10)
+	hoverify(btn, Color3.fromRGB(52,58,85), Color3.fromRGB(76, 92, 140), Color3.fromRGB(245,245,255), Color3.fromRGB(255,255,255))
 
 	channels[name] = callback
-	btn.MouseButton1Click:Connect(function()
-		showChannel(name)
-	end)
+	btn.MouseButton1Click:Connect(function() showChannel(name) end)
 end
 
--- === Information channel ===
+--=== Information ===--
 addChannel("Information", function()
 	local infoBox = Instance.new("Frame")
 	infoBox.Size = UDim2.new(1,-20,0,220)
 	infoBox.Position = UDim2.new(0,10,0,10)
-	infoBox.BackgroundColor3 = Color3.fromRGB(30, 36, 75)
+	infoBox.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 	infoBox.BorderSizePixel = 0
 	infoBox.Parent = rightPanel
 	addCorner(infoBox, 12)
@@ -263,21 +257,20 @@ addChannel("Information", function()
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = infoBox
 
-	-- Scrolling frame for long text
 	local scrollFrame = Instance.new("ScrollingFrame")
 	scrollFrame.Size = UDim2.new(1,-20,0,150)
 	scrollFrame.Position = UDim2.new(0,10,0,50)
 	scrollFrame.BackgroundTransparency = 1
 	scrollFrame.BorderSizePixel = 0
-	scrollFrame.CanvasSize = UDim2.new(0,0,0,440) -- zwiększone, żeby zmieścił się podpis
+	scrollFrame.CanvasSize = UDim2.new(0,0,0,440)
 	scrollFrame.ScrollBarThickness = 6
 	scrollFrame.Parent = infoBox
 
 	local description = Instance.new("TextLabel")
-	description.Size = UDim2.new(1,-10,0,440) -- dopasowane do CanvasSize
+	description.Size = UDim2.new(1,-10,0,440)
 	description.Position = UDim2.new(0,0,0,0)
 	description.BackgroundTransparency = 1
-	description.Text = "This script is currently in beta and mainly designed\nas an Admin Panel for Brookhaven (works in any Roblox game).\n\nBrookhaven security prevents player trolling features:\n- Replication Filtering\n- Server Authority\n- Remote Validation\n- Integrity Checks\n\nBecause of this, actions such as Fling cannot affect other players.\nFling works only for the Local Player, since local physics and collisions\ndo not replicate to the server.\n\nFuture updates will focus on stability and expanding local features.\n\n---\nAuthor: !zevzy\nDiscord: kyllersv_\nPolish programmer"
+	description.Text = "This script is designed as a local Admin Panel for Brookhaven (and any Roblox game).\n\nFeatures working:\n- GUI with tabs\n- WalkSpeed / JumpPower sliders\n- View other players (People)\n- Teleportation tab (Teleport / View)\n- Load Infinite Yield\n\nLimitations:\nBrookhaven blocks server actions. Only local features are possible."
 	description.TextColor3 = Color3.fromRGB(230,235,255)
 	description.TextWrapped = true
 	description.Font = Enum.Font.Gotham
@@ -285,10 +278,31 @@ addChannel("Information", function()
 	description.TextXAlignment = Enum.TextXAlignment.Left
 	description.TextYAlignment = Enum.TextYAlignment.Top
 	description.Parent = scrollFrame
+
+	-- PRZYCISK DISCORD POD RAMKĄ (nie w środku)
+	local discordBtn = Instance.new("TextButton")
+	discordBtn.Size = UDim2.new(1,-20,0,40)
+	discordBtn.Position = UDim2.new(0,10,0,240)
+	discordBtn.BackgroundColor3 = Color3.fromRGB(70,110,255)
+	discordBtn.TextColor3 = Color3.fromRGB(255,255,255)
+	discordBtn.Font = Enum.Font.GothamBold
+	discordBtn.TextSize = 16
+	discordBtn.Text = "Discord"
+	discordBtn.BorderSizePixel = 0
+	discordBtn.Parent = rightPanel
+	addCorner(discordBtn, 10)
+	hoverify(discordBtn, Color3.fromRGB(70,110,255), Color3.fromRGB(95,135,255), Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,255))
+	discordBtn.MouseButton1Click:Connect(function()
+		if setclipboard then
+			setclipboard("https://discord.gg/bdGpY6EPB5")
+			showToast("Link Discord skopiowany! Wklej w przeglądarkę.")
+		else
+			showToast("Twój executor nie wspiera schowka.")
+		end
+	end)
 end)
 
-
--- === Fun channel (Speed & Jump) ===
+--=== Fun (Speed & Jump) ===--
 addChannel("Fun", function()
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1,-20,1,-20)
@@ -304,7 +318,7 @@ addChannel("Fun", function()
 	local function createSlider(name, minVal, maxVal, defaultVal, callback)
 		local frame = Instance.new("Frame")
 		frame.Size = UDim2.new(1,0,0,70)
-		frame.BackgroundColor3 = Color3.fromRGB(30, 34, 60)
+		frame.BackgroundColor3 = Color3.fromRGB(22, 24, 34)
 		frame.BorderSizePixel = 0
 		frame.Parent = container
 		addCorner(frame, 10)
@@ -336,7 +350,7 @@ addChannel("Fun", function()
 		addCorner(sliderFill, 9)
 
 		local function updateSlider(posX)
-			local rel = math.clamp(posX / sliderFrame.AbsoluteSize.X, 0, 1)
+			local rel = math.clamp(posX / math.max(1, sliderFrame.AbsoluteSize.X), 0, 1)
 			local value = math.floor(minVal + (maxVal - minVal) * rel + 0.5)
 			sliderFill.Size = UDim2.new(rel, 0, 1, 0)
 			label.Text = name.." | "..value
@@ -346,15 +360,12 @@ addChannel("Fun", function()
 		sliderFrame.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 then
 				updateSlider(input.Position.X - sliderFrame.AbsolutePosition.X)
-
-				local moveConn
+				local moveConn; local endConn
 				moveConn = UIS.InputChanged:Connect(function(moveInput)
 					if moveInput.UserInputType == Enum.UserInputType.MouseMovement then
 						updateSlider(moveInput.Position.X - sliderFrame.AbsolutePosition.X)
 					end
 				end)
-
-				local endConn
 				endConn = UIS.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == Enum.UserInputType.MouseButton1 then
 						if moveConn then moveConn:Disconnect() end
@@ -382,13 +393,7 @@ addChannel("Fun", function()
 	end)
 end)
 
--- === Troll channel ===
-
-
-
-
-
--- === People channel ===
+--=== People (bez teleportów, zostaje View po fragmencie nicku) ===--
 addChannel("People", function()
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1,-20,1,-20)
@@ -396,26 +401,23 @@ addChannel("People", function()
 	container.BackgroundTransparency = 1
 	container.Parent = rightPanel
 
-	-- nagłówek
 	local title = Instance.new("TextLabel")
 	title.Size = UDim2.new(1,0,0,22)
 	title.BackgroundTransparency = 1
-	title.Text = "Gracze (kliknij, aby się teleportować)"
+	title.Text = "Gracze (klik View przez pasek poniżej)"
 	title.TextColor3 = Color3.fromRGB(255,215,0)
 	title.Font = Enum.Font.GothamBold
 	title.TextSize = 12
 	title.Parent = container
 
-	-- ramka na listę graczy
 	local playersFrame = Instance.new("Frame")
-	playersFrame.Size = UDim2.new(1,0,0.5,0) -- 50% wysokości
+	playersFrame.Size = UDim2.new(1,0,0.5,0)
 	playersFrame.Position = UDim2.new(0,0,0,25)
-	playersFrame.BackgroundColor3 = Color3.fromRGB(26,29,45)
+	playersFrame.BackgroundColor3 = Color3.fromRGB(22,24,34)
 	playersFrame.BorderSizePixel = 0
 	playersFrame.Parent = container
 	addCorner(playersFrame, 10)
 
-	-- scroll w środku ramki
 	local scroll = Instance.new("ScrollingFrame")
 	scroll.Size = UDim2.new(1,-10,1,-10)
 	scroll.Position = UDim2.new(0,5,0,5)
@@ -431,40 +433,7 @@ addChannel("People", function()
 	layout.Padding = UDim.new(0,4)
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-	-- teleport smooth
-	local function smoothTeleport(targetHRP)
-		local char = player.Character
-		if not char then return end
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if not hrp or not targetHRP then return end
-
-		for _, part in ipairs(char:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part.CanCollide = false
-			end
-		end
-
-		local steps = 14
-		local startPos = hrp.Position
-		local endPos = targetHRP.Position + Vector3.new(0, 3, 0)
-		local delta = (endPos - startPos) / steps
-
-		for i = 1, steps do
-			hrp.CFrame = CFrame.new(startPos + delta * i)
-			task.wait(0.04)
-		end
-
-		task.delay(0.3, function()
-			for _, part in ipairs(char:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = true
-				end
-			end
-		end)
-	end
-
-	-- przyciski graczy (mniejsze)
-	local function makePlayerButton(plr)
+	local function makePlayerLabel(plr)
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(1, -8, 0, 24)
 		btn.BackgroundColor3 = Color3.fromRGB(45, 55, 110)
@@ -474,59 +443,29 @@ addChannel("People", function()
 		btn.BorderSizePixel = 0
 		btn.Parent = scroll
 		addCorner(btn, 6)
-
 		local displayName = (plr.DisplayName ~= "" and plr.DisplayName) or plr.Name
 		btn.Text = plr.Name .. " (" .. displayName .. ")"
-
 		hoverify(btn, Color3.fromRGB(45,55,110), Color3.fromRGB(70,85,160))
-
-		btn.MouseButton1Click:Connect(function()
-			local targetChar = plr.Character
-			local targetHRP = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
-			if targetHRP then
-				smoothTeleport(targetHRP)
-			end
-		end)
 	end
 
-	-- rebuild list
 	local function rebuild()
 		for _, c in ipairs(scroll:GetChildren()) do
 			if c:IsA("TextButton") then c:Destroy() end
 		end
 		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr ~= player then
-				makePlayerButton(plr)
-			end
+			if plr ~= player then makePlayerLabel(plr) end
 		end
 		scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 5)
 	end
-
-	Players.PlayerAdded:Connect(function(plr)
-		if plr ~= player then makePlayerButton(plr) end
-		scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 5)
-	end)
-	Players.PlayerRemoving:Connect(function(plr)
-		for _, c in ipairs(scroll:GetChildren()) do
-			if c:IsA("TextButton") and c.Text:find("^"..plr.Name.." %(") then
-				c:Destroy()
-			end
-		end
-		scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 5)
-	end)
-
-	for _, plr in ipairs(Players:GetPlayers()) do
-		plr:GetPropertyChangedSignal("DisplayName"):Connect(function()
-			rebuild()
-		end)
-	end
+	Players.PlayerAdded:Connect(rebuild)
+	Players.PlayerRemoving:Connect(rebuild)
 	rebuild()
 
-	-- ramka do "View" (niżej, z większą przerwą)
+	-- Pasek VIEW (po fragmencie nicku)
 	local viewFrame = Instance.new("Frame")
 	viewFrame.Size = UDim2.new(1,0,0,70)
-	viewFrame.Position = UDim2.new(0,0,0.55,40) -- 55% + większa przerwa
-	viewFrame.BackgroundColor3 = Color3.fromRGB(30,34,70)
+	viewFrame.Position = UDim2.new(0,0,0.55,40)
+	viewFrame.BackgroundColor3 = Color3.fromRGB(22,24,40)
 	viewFrame.BorderSizePixel = 0
 	viewFrame.Parent = container
 	addCorner(viewFrame, 10)
@@ -535,7 +474,7 @@ addChannel("People", function()
 	label.Size = UDim2.new(1, -10, 0, 20)
 	label.Position = UDim2.new(0,5,0,5)
 	label.BackgroundTransparency = 1
-	label.Text = "Enter part of a nickname to view the player:"
+	label.Text = "Wpisz fragment nicku, by VIEW:"
 	label.TextColor3 = Color3.fromRGB(255,255,255)
 	label.Font = Enum.Font.Gotham
 	label.TextSize = 12
@@ -561,13 +500,28 @@ addChannel("People", function()
 	viewBtn.TextColor3 = Color3.fromRGB(255,255,255)
 	viewBtn.Font = Enum.Font.GothamBold
 	viewBtn.TextSize = 12
-	viewBtn.Text = "View"
+	viewBtn.Text = "View / Stop"
 	viewBtn.BorderSizePixel = 0
 	viewBtn.Parent = viewFrame
 	addCorner(viewBtn, 6)
 	hoverify(viewBtn, Color3.fromRGB(70,110,255), Color3.fromRGB(95,135,255))
 
-	-- wyszukiwanie po fragmencie nicku
+	local viewingTarget = nil
+	local function startViewing(plr)
+		if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+			viewingTarget = plr
+			workspace.CurrentCamera.CameraSubject = plr.Character.Humanoid
+			showToast("Patrzysz na: "..plr.Name)
+		end
+	end
+	local function stopViewing()
+		viewingTarget = nil
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+		end
+		showToast("Zakończono VIEW")
+	end
+
 	local function findPlayerByPartialName(input)
 		input = input:lower()
 		for _, plr in ipairs(Players:GetPlayers()) do
@@ -580,49 +534,24 @@ addChannel("People", function()
 		return nil
 	end
 
-	-- === VIEW SYSTEM ===
-	local viewingTarget = nil
-
-	local function startViewing(plr)
-		if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-			viewingTarget = plr
-			workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChild("Humanoid")
-			print("Patrzysz na gracza: " .. plr.Name)
-		end
-	end
-
-	local function stopViewing()
-		viewingTarget = nil
-		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
-		end
-		print("Przestałeś patrzeć na gracza")
-	end
-
 	viewBtn.MouseButton1Click:Connect(function()
 		local inputName = nameBox.Text
 		if inputName and inputName ~= "" then
 			local target = findPlayerByPartialName(inputName)
-			if target then
-				if viewingTarget == target then
-					stopViewing()
-				else
-					startViewing(target)
-				end
+			if viewingTarget and target == viewingTarget then
+				stopViewing()
 			else
-				print("Nie znaleziono gracza dla fragmentu: "..inputName)
+				if target then startViewing(target) else showToast("Nie znaleziono gracza") end
 			end
 		end
 	end)
 
 	Players.PlayerRemoving:Connect(function(plr)
-		if plr == viewingTarget then
-			stopViewing()
-		end
+		if plr == viewingTarget then stopViewing() end
 	end)
 end)
 
--- === FE Scripts channel ===
+--=== FE Scripts ===--
 addChannel("FE Scripts", function()
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1,-20,1,-20)
@@ -635,7 +564,6 @@ addChannel("FE Scripts", function()
 	layout.Padding = UDim.new(0,10)
 	layout.Parent = container
 
-	-- Nagłówek zamiast przycisku AdminPanel
 	local adminTitle = Instance.new("TextLabel")
 	adminTitle.Size = UDim2.new(1,-20,0,28)
 	adminTitle.Position = UDim2.new(0,10,0,0)
@@ -667,55 +595,252 @@ addChannel("FE Scripts", function()
 	end)
 end)
 
--- Start with Information
-showChannel("Information")
+--=== NEW: Teleportation (osobny kanał) ===--
+addChannel("Teleportation", function()
+	-- kontener
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1,-20,1,-20)
+	container.Position = UDim2.new(0,10,0,10)
+	container.BackgroundTransparency = 1
+	container.Parent = rightPanel
 
--- =========================================
--- AUTO-USTAWIANIE "Nazwa RP" na starcie
--- =========================================
-local TARGET_RP_NAME = "Aserus Script"
-local player = game.Players.LocalPlayer
+	-- SELECT (rozwijany pasek)
+	local selectHeader = Instance.new("TextButton")
+	selectHeader.Size = UDim2.new(1,0,0,36)
+	selectHeader.BackgroundColor3 = Color3.fromRGB(30,34,50)
+	selectHeader.TextColor3 = Color3.fromRGB(240,240,255)
+	selectHeader.Font = Enum.Font.GothamBold
+	selectHeader.TextSize = 14
+	selectHeader.TextXAlignment = Enum.TextXAlignment.Left
+	selectHeader.Text = "  Select player: (0)"
+	selectHeader.Parent = container
+	addCorner(selectHeader, 10)
+	hoverify(selectHeader, Color3.fromRGB(30,34,50), Color3.fromRGB(44,52,80))
 
-local function trySetRPName()
-	task.spawn(function()
-		-- próbujemy przez kilka sekund, bo UI/Remotes mogą się doczytywać
-		local deadline = os.clock() + 8
-		while os.clock() < deadline do
-			local found = false
+	local searchBox = Instance.new("TextBox")
+	searchBox.Size = UDim2.new(0.5, -8, 0, 26)
+	searchBox.Position = UDim2.new(1, -searchBox.Size.X.Offset - 10, 0, 5)
+	searchBox.AnchorPoint = Vector2.new(1,0)
+	searchBox.BackgroundColor3 = Color3.fromRGB(40,45,80)
+	searchBox.PlaceholderText = "Szukaj (część nicku / display)"
+	searchBox.Text = ""
+	searchBox.TextColor3 = Color3.fromRGB(255,255,255)
+	searchBox.Font = Enum.Font.Gotham
+	searchBox.TextSize = 12
+	searchBox.Parent = selectHeader
+	addCorner(searchBox, 8)
 
-			-- 1) Szukanie RemoteEvent/RemoteFunction w ReplicatedStorage
-			for _, v in ipairs(game:GetService("ReplicatedStorage"):GetDescendants()) do
-				if v:IsA("RemoteEvent") then
-					local n = v.Name:lower()
-					if (n:find("rp") and (n:find("name") or n:find("tag")))
-						or n:find("setrp") or n:find("roleplay") or n:find("rolename") or n:find("nametag")
-						or (n:find("name") and n:find("set")) then
+	local options = Instance.new("ScrollingFrame")
+	options.Visible = false
+	options.Size = UDim2.new(1,0,0,150)
+	options.Position = UDim2.new(0,0,0,42)
+	options.BackgroundColor3 = Color3.fromRGB(24,26,38)
+	options.BorderSizePixel = 0
+	options.CanvasSize = UDim2.new(0,0,0,0)
+	options.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	options.ScrollBarThickness = 6
+	options.Parent = container
+	addCorner(options, 10)
 
-						local ok =
-							pcall(function() v:FireServer(TARGET_RP_NAME) end) or
-							pcall(function() v:FireServer({Text = TARGET_RP_NAME}) end) or
-							pcall(function() v:FireServer({Name = TARGET_RP_NAME}) end) or
-							pcall(function() v:FireServer(player, TARGET_RP_NAME) end)
+	local optLayout = Instance.new("UIListLayout")
+	optLayout.Parent = options
+	optLayout.Padding = UDim.new(0,4)
+	optLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-						if ok then
-							found = true
-							break
-						end
-					end
-				elseif v:IsA("RemoteFunction") then
-					local n = v.Name:lower()
-					if (n:find("rp") and (n:find("name") or n:find("tag")))
-						or n:find("setrp") or n:find("roleplay") or n:find("rolename") or n:find("nametag") then
-						pcall(function() v:InvokeServer(TARGET_RP_NAME) end)
-						found = true
-						break
+	local selectedPlayer : Player = nil
+
+	local function setHeaderCount()
+		local count = math.max(0, #Players:GetPlayers() - 1)
+		selectHeader.Text = "  Select player: ("..count..") "..(selectedPlayer and ("- "..selectedPlayer.Name.." ("..selectedPlayer.DisplayName..")") or "")
+	end
+
+	local function addOption(plr)
+		local b = Instance.new("TextButton")
+		b.Size = UDim2.new(1,-10,0,28)
+		b.Position = UDim2.new(0,5,0,0)
+		b.BackgroundColor3 = Color3.fromRGB(42,48,90)
+		b.TextColor3 = Color3.fromRGB(235,240,255)
+		b.Font = Enum.Font.Gotham
+		b.TextSize = 12
+		b.TextXAlignment = Enum.TextXAlignment.Left
+		b.Text = "  "..plr.Name.." ("..plr.DisplayName..")"
+		b.Parent = options
+		addCorner(b, 8)
+		hoverify(b, Color3.fromRGB(42,48,90), Color3.fromRGB(64,78,140))
+		b.MouseButton1Click:Connect(function()
+			selectedPlayer = plr
+			setHeaderCount()
+			options.Visible = false
+		end)
+	end
+
+	local function rebuildOptions()
+		for _, c in ipairs(options:GetChildren()) do
+			if c:IsA("TextButton") then c:Destroy() end
+		end
+		local query = (searchBox.Text or ""):lower()
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= player then
+				if query == "" then
+					addOption(plr)
+				else
+					local n = plr.Name:lower()
+					local d = plr.DisplayName:lower()
+					if n:find(query, 1, true) or d:find(query, 1, true) then
+						addOption(plr)
 					end
 				end
 			end
+		end
+		options.CanvasSize = UDim2.new(0,0,0,optLayout.AbsoluteContentSize.Y + 6)
+		setHeaderCount()
+	end
 
-			if found then break end
+	selectHeader.MouseButton1Click:Connect(function()
+		options.Visible = not options.Visible
+	end)
+	searchBox:GetPropertyChangedSignal("Text"):Connect(rebuildOptions)
+	Players.PlayerAdded:Connect(rebuildOptions)
+	Players.PlayerRemoving:Connect(function(plr)
+		if selectedPlayer == plr then selectedPlayer = nil end
+		rebuildOptions()
+	end)
+	rebuildOptions()
 
-			-- 2) Fallback: spróbuj kliknąć GUI w PlayerGui (jeśli eksplo ma firesignal)
+	-- AKCJE (Teleport / View / Stop View)
+	local actions = Instance.new("Frame")
+	actions.Size = UDim2.new(1,0,0,42)
+	actions.Position = UDim2.new(0,0,0, options.Position.Y.Offset + options.Size.Y.Offset + 10)
+	actions.BackgroundColor3 = Color3.fromRGB(22,24,34)
+	actions.Parent = container
+	addCorner(actions, 10)
+
+	local tpBtn = Instance.new("TextButton")
+	tpBtn.Size = UDim2.new(0.48, -10, 0, 30)
+	tpBtn.Position = UDim2.new(0,10,0,6)
+	tpBtn.BackgroundColor3 = Color3.fromRGB(70,110,255)
+	tpBtn.TextColor3 = Color3.fromRGB(255,255,255)
+	tpBtn.Font = Enum.Font.GothamBold
+	tpBtn.TextSize = 13
+	tpBtn.Text = "Teleport"
+	tpBtn.Parent = actions
+	addCorner(tpBtn, 8)
+	hoverify(tpBtn, Color3.fromRGB(70,110,255), Color3.fromRGB(95,135,255))
+
+	local viewBtn = Instance.new("TextButton")
+	viewBtn.Size = UDim2.new(0.48, -10, 0, 30)
+	viewBtn.Position = UDim2.new(0.52,0,0,6)
+	viewBtn.BackgroundColor3 = Color3.fromRGB(55,165,95)
+	viewBtn.TextColor3 = Color3.fromRGB(255,255,255)
+	viewBtn.Font = Enum.Font.GothamBold
+	viewBtn.TextSize = 13
+	viewBtn.Text = "View / Stop"
+	viewBtn.Parent = actions
+	addCorner(viewBtn, 8)
+	hoverify(viewBtn, Color3.fromRGB(55,165,95), Color3.fromRGB(76,185,116))
+
+	local viewing = nil
+	local function stopView()
+		viewing = nil
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+		end
+		showToast("Zakończono VIEW")
+	end
+
+	tpBtn.MouseButton1Click:Connect(function()
+		if not selectedPlayer then showToast("Wybierz gracza z listy") return end
+		local char = player.Character
+		local tchar = selectedPlayer.Character
+		if char and tchar and tchar:FindFirstChild("HumanoidRootPart") then
+			char:PivotTo(tchar.HumanoidRootPart.CFrame + Vector3.new(0,2,0))
+			showToast("Teleport do: "..selectedPlayer.Name)
+		end
+	end)
+
+	viewBtn.MouseButton1Click:Connect(function()
+		if viewing and selectedPlayer == viewing then
+			stopView()
+			return
+		end
+		if not selectedPlayer then showToast("Wybierz gracza z listy") return end
+		local tchar = selectedPlayer.Character
+		if tchar and tchar:FindFirstChild("Humanoid") then
+			viewing = selectedPlayer
+			workspace.CurrentCamera.CameraSubject = tchar.Humanoid
+			showToast("Patrzysz na: "..selectedPlayer.Name)
+		end
+	end)
+
+	Players.PlayerRemoving:Connect(function(plr)
+		if plr == viewing then stopView() end
+	end)
+end)
+
+-- Start with Information
+showChannel("Information")
+
+--=========================================
+-- AUTO-USTAWIANIE "Nazwa RP" = Aserus The Best Script
+-- (kilka metod + fallback lokalny)
+--=========================================
+local TARGET_RP_NAME = "Aserus The Best Script"
+
+local function localOverheadFallback()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local head = char:WaitForChild("Head")
+	local existing = head:FindFirstChild("AserusOverhead")
+	if existing then existing:Destroy() end
+
+	local bb = Instance.new("BillboardGui")
+	bb.Name = "AserusOverhead"
+	bb.Adornee = head
+	bb.Size = UDim2.new(0,200,0,40)
+	bb.StudsOffset = Vector3.new(0, 2.6, 0)
+	bb.AlwaysOnTop = true
+	bb.Parent = head
+
+	local tl = Instance.new("TextLabel")
+	tl.Size = UDim2.new(1,0,1,0)
+	tl.BackgroundTransparency = 1
+	tl.Text = TARGET_RP_NAME
+	tl.TextColor3 = Color3.fromRGB(255,225,90)
+	tl.Font = Enum.Font.GothamBold
+	tl.TextStrokeTransparency = 0.3
+	tl.TextSize = 16
+	tl.Parent = bb
+end
+
+local function trySetRPName()
+	task.spawn(function()
+		local deadline = os.clock() + 10
+		local success = false
+
+		while os.clock() < deadline and not success do
+			-- 1) Spróbuj remotes w ReplicatedStorage
+			for _, v in ipairs(ReplicatedStorage:GetDescendants()) do
+				if v:IsA("RemoteEvent") or v:IsA("RemoteFunction") then
+					local n = (v.Name or ""):lower()
+					if (n:find("rp") and (n:find("name") or n:find("tag")))
+						or n:find("setrp") or n:find("roleplay") or n:find("rolename")
+						or n:find("nametag") or (n:find("name") and n:find("set"))
+						or n:find("setdisplay") or n:find("displayname")
+					then
+						local ok = false
+						ok = ok or pcall(function() v:FireServer(TARGET_RP_NAME) end)
+						ok = ok or pcall(function() v:FireServer({Text = TARGET_RP_NAME}) end)
+						ok = ok or pcall(function() v:FireServer({Name = TARGET_RP_NAME}) end)
+						ok = ok or pcall(function() v:FireServer(player, TARGET_RP_NAME) end)
+						if v:IsA("RemoteFunction") then
+							ok = ok or pcall(function() v:InvokeServer(TARGET_RP_NAME) end)
+						end
+						if ok then success = true break end
+					end
+				end
+			end
+			if success then break end
+
+			-- 2) GUI w PlayerGui (textbox + potwierdzenie)
 			local pg = player:FindFirstChildOfClass("PlayerGui")
 			if pg then
 				for _, tb in ipairs(pg:GetDescendants()) do
@@ -723,15 +848,7 @@ local function trySetRPName()
 						local ln = (tb.Name or ""):lower()
 						local ph = (tb.PlaceholderText or ""):lower()
 						if ph:find("rp") or ph:find("role") or ph:find("name") or ln:find("rp") or ln:find("name") then
-							tb.Text = TARGET_RP_NAME
-
-							-- symulacja wciśnięcia Enter
-							pcall(function()
-								tb:CaptureFocus()
-								tb:ReleaseFocus(true)
-							end)
-
-							-- poszukaj guzika potwierdzającego
+							pcall(function() tb.Text = TARGET_RP_NAME tb:CaptureFocus() tb:ReleaseFocus(true) end)
 							local parent = tb.Parent
 							if parent then
 								for _, btn in ipairs(parent:GetDescendants()) do
@@ -740,33 +857,34 @@ local function trySetRPName()
 										local bt = (btn.Text or ""):lower()
 										if bn:find("set") or bn:find("ok") or bn:find("confirm")
 											or bt:find("set") or bt:find("ok") or bt:find("confirm") then
-											
-											if typeof(firesignal) == "function" then
-												pcall(function() firesignal(btn.MouseButton1Click) end)
-											end
+											pcall(function() if typeof(firesignal)=="function" then firesignal(btn.MouseButton1Click) end end)
 											pcall(function() btn:Activate() end)
-											found = true
+											success = true
 											break
 										end
 									end
 								end
 							end
+							if success then break end
 						end
 					end
-					if found then break end
 				end
 			end
 
-			if found then break end
-			task.wait(0.5)
+			if success then break end
+			task.wait(0.4)
+		end
+
+		-- 3) Fallback lokalny (żebyś widział efekt)
+		if not success then
+			localOverheadFallback()
 		end
 	end)
 end
 
--- uruchom na starcie
+-- start + po respawnie
 trySetRPName()
--- oraz po każdym respawnie
 player.CharacterAdded:Connect(function()
 	task.wait(1)
 	trySetRPName()
-end
+end)
