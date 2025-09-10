@@ -348,6 +348,99 @@ addChannel("Information", function()
 	end)
 end)
 
+-- ====== CHANNEL: Fun (slidery) ======
+addChannel("Fun", function()
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1,-20,1,-20)
+	container.Position = UDim2.new(0,10,0,10)
+	container.BackgroundTransparency = 1
+	container.Parent = rightPanel
+
+	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0,14)
+	layout.Parent = container
+
+	local function createSlider(name, minVal, maxVal, defaultVal, callback)
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(1,0,0,70)
+		frame.BackgroundColor3 = Color3.fromRGB(26, 30, 50)
+		frame.BorderSizePixel = 0
+		frame.Parent = container
+		addCorner(frame, 10)
+
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1,-20,0,20)
+		label.Position = UDim2.new(0,10,0,8)
+		label.BackgroundTransparency = 1
+		label.TextColor3 = Color3.fromRGB(230,235,255)
+		label.Font = Enum.Font.GothamBold
+		label.TextSize = 14
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		label.Text = name.." | "..defaultVal
+		label.Parent = frame
+
+		local sliderFrame = Instance.new("Frame")
+		sliderFrame.Size = UDim2.new(1,-20,0,18)
+		sliderFrame.Position = UDim2.new(0,10,0,40)
+		sliderFrame.BackgroundColor3 = Color3.fromRGB(45, 55, 110)
+		sliderFrame.BorderSizePixel = 0
+		sliderFrame.Parent = frame
+		addCorner(sliderFrame, 9)
+
+		local sliderFill = Instance.new("Frame")
+		sliderFill.Size = UDim2.new(0,0,1,0)
+		sliderFill.BackgroundColor3 = Color3.fromRGB(255,215,0)
+		sliderFill.BorderSizePixel = 0
+		sliderFill.Parent = sliderFrame
+		addCorner(sliderFill, 9)
+
+		local function updateSlider(posX)
+			local rel = math.clamp(posX / math.max(1, sliderFrame.AbsoluteSize.X), 0, 1)
+			local value = math.floor(minVal + (maxVal - minVal) * rel + 0.5)
+			sliderFill.Size = UDim2.new(rel, 0, 1, 0)
+			label.Text = name.." | "..value
+			callback(value)
+		end
+
+		sliderFrame.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				updateSlider(input.Position.X - sliderFrame.AbsolutePosition.X)
+
+				local moveConn
+				moveConn = UIS.InputChanged:Connect(function(moveInput)
+					if moveInput.UserInputType == Enum.UserInputType.MouseMovement then
+						updateSlider(moveInput.Position.X - sliderFrame.AbsolutePosition.X)
+					end
+				end)
+
+				local endConn
+				endConn = UIS.InputEnded:Connect(function(endInput)
+					if endInput.UserInputType == Enum.UserInputType.MouseButton1 then
+						if moveConn then moveConn:Disconnect() end
+						if endConn then endConn:Disconnect() end
+					end
+				end)
+			end
+		end)
+
+		local rel0 = (defaultVal - minVal) / (maxVal - minVal)
+		sliderFill.Size = UDim2.new(math.clamp(rel0,0,1),0,1,0)
+		callback(defaultVal)
+	end
+
+	createSlider("WalkSpeed", 16, 500, 16, function(val)
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			player.Character.Humanoid.WalkSpeed = val
+		end
+	end)
+	createSlider("JumpPower", 50, 500, 50, function(val)
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			player.Character.Humanoid.JumpPower = val
+		end
+	end)
+end)
+
 -- ====== CHANNEL: People (TP + View, live, filter) ======
 addChannel("People", function()
 	local container = Instance.new("Frame")
@@ -552,99 +645,6 @@ addChannel("People", function()
 		if removedConn then removedConn:Disconnect() end
 		for _,c in ipairs(dispConn) do pcall(function() c:Disconnect() end) end
 	end
-end)
-
--- ====== CHANNEL: Fun (slidery) ======
-addChannel("Fun", function()
-	local container = Instance.new("Frame")
-	container.Size = UDim2.new(1,-20,1,-20)
-	container.Position = UDim2.new(0,10,0,10)
-	container.BackgroundTransparency = 1
-	container.Parent = rightPanel
-
-	local layout = Instance.new("UIListLayout")
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Padding = UDim.new(0,14)
-	layout.Parent = container
-
-	local function createSlider(name, minVal, maxVal, defaultVal, callback)
-		local frame = Instance.new("Frame")
-		frame.Size = UDim2.new(1,0,0,70)
-		frame.BackgroundColor3 = Color3.fromRGB(26, 30, 50)
-		frame.BorderSizePixel = 0
-		frame.Parent = container
-		addCorner(frame, 10)
-
-		local label = Instance.new("TextLabel")
-		label.Size = UDim2.new(1,-20,0,20)
-		label.Position = UDim2.new(0,10,0,8)
-		label.BackgroundTransparency = 1
-		label.TextColor3 = Color3.fromRGB(230,235,255)
-		label.Font = Enum.Font.GothamBold
-		label.TextSize = 14
-		label.TextXAlignment = Enum.TextXAlignment.Left
-		label.Text = name.." | "..defaultVal
-		label.Parent = frame
-
-		local sliderFrame = Instance.new("Frame")
-		sliderFrame.Size = UDim2.new(1,-20,0,18)
-		sliderFrame.Position = UDim2.new(0,10,0,40)
-		sliderFrame.BackgroundColor3 = Color3.fromRGB(45, 55, 110)
-		sliderFrame.BorderSizePixel = 0
-		sliderFrame.Parent = frame
-		addCorner(sliderFrame, 9)
-
-		local sliderFill = Instance.new("Frame")
-		sliderFill.Size = UDim2.new(0,0,1,0)
-		sliderFill.BackgroundColor3 = Color3.fromRGB(255,215,0)
-		sliderFill.BorderSizePixel = 0
-		sliderFill.Parent = sliderFrame
-		addCorner(sliderFill, 9)
-
-		local function updateSlider(posX)
-			local rel = math.clamp(posX / math.max(1, sliderFrame.AbsoluteSize.X), 0, 1)
-			local value = math.floor(minVal + (maxVal - minVal) * rel + 0.5)
-			sliderFill.Size = UDim2.new(rel, 0, 1, 0)
-			label.Text = name.." | "..value
-			callback(value)
-		end
-
-		sliderFrame.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
-				updateSlider(input.Position.X - sliderFrame.AbsolutePosition.X)
-
-				local moveConn
-				moveConn = UIS.InputChanged:Connect(function(moveInput)
-					if moveInput.UserInputType == Enum.UserInputType.MouseMovement then
-						updateSlider(moveInput.Position.X - sliderFrame.AbsolutePosition.X)
-					end
-				end)
-
-				local endConn
-				endConn = UIS.InputEnded:Connect(function(endInput)
-					if endInput.UserInputType == Enum.UserInputType.MouseButton1 then
-						if moveConn then moveConn:Disconnect() end
-						if endConn then endConn:Disconnect() end
-					end
-				end)
-			end
-		end)
-
-		local rel0 = (defaultVal - minVal) / (maxVal - minVal)
-		sliderFill.Size = UDim2.new(math.clamp(rel0,0,1),0,1,0)
-		callback(defaultVal)
-	end
-
-	createSlider("WalkSpeed", 16, 500, 16, function(val)
-		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			player.Character.Humanoid.WalkSpeed = val
-		end
-	end)
-	createSlider("JumpPower", 50, 500, 50, function(val)
-		if player.Character and player.Character:FindFirstChild("Humanoid") then
-			player.Character.Humanoid.JumpPower = val
-		end
-	end)
 end)
 
 -- ====== CHANNEL: FE Scripts ======
