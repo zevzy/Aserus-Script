@@ -378,17 +378,6 @@ addChannel("People", function()
 	search.Parent = topBar
 	addCorner(search, 6)
 
-	local selectedLbl = Instance.new("TextLabel")
-	selectedLbl.Size = UDim2.new(0.4,-16,1,-10)
-	selectedLbl.Position = UDim2.new(0.6,8,0,5)
-	selectedLbl.BackgroundTransparency = 1
-	selectedLbl.Text = "Selected: —"
-	selectedLbl.TextColor3 = Color3.fromRGB(230,235,255)
-	selectedLbl.Font = Enum.Font.Gotham
-	selectedLbl.TextSize = 13
-	selectedLbl.TextXAlignment = Enum.TextXAlignment.Left
-	selectedLbl.Parent = topBar
-
 	-- List
 	local frameList = Instance.new("Frame")
 	frameList.Size = UDim2.new(1,0,1,-90)
