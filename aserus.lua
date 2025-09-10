@@ -1,11 +1,3 @@
---[[ 
-	Aserus | Brookhaven RP Script (GUI)
-	- Channels: Information, People, Fun, FE Scripts
-	- RP Name auto-set by UI (no remote calls) -> "Aserus The Best Script"
-	- Roblox-like toasts (copy link, join/leave)
-	- Live player list with filter, TP & View
-	- Executor detection in title
-]]--
 
 --// Services
 local Players = game:GetService("Players")
