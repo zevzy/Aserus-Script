@@ -312,7 +312,7 @@ addChannel("Information", function()
 	description.Size = UDim2.new(1,-10,0,200)
 	description.Position = UDim2.new(0,0,0,0)
 	description.BackgroundTransparency = 1
-	description.Text = "Local Admin Panel for Brookhaven.\n\n• People: lista graczy, TP i View (live)\n• Fun: suwak WalkSpeed / JumpPower (lokalnie)\n• FE Scripts: Infinite Yield\n\njoin our discord: discord.gg/bdGpY6EPB5"
+	description.Text = "Local Admin Panel for Brookhaven.\n\n• People: lista graczy, TP i View (live)\n• Fun: suwak WalkSpeed / JumpPower (lokalnie)\n• FE Scripts: Infinite Yield\n\njoin our discord: discord.gg/bdGpY6EPB5\n\nI am a Polish programmer, maybe the script is not particularly strong, but it was made for scientific purposes, and I wanted to share it, maybe in the future the script will be updated."
 	description.TextColor3 = Color3.fromRGB(230,235,255)
 	description.TextWrapped = true
 	description.Font = Enum.Font.Gotham
@@ -327,7 +327,7 @@ addChannel("Information", function()
 	discordBtn.Position = UDim2.new(0,10,0,220)
 	discordBtn.BackgroundColor3 = Color3.fromRGB(70, 110, 255)
 	discordBtn.TextColor3 = Color3.fromRGB(255,255,255)
-	discordBtn.Text = "Discord"
+	discordBtn.Text = "copy link Discord"
 	discordBtn.Font = Enum.Font.GothamBold
 	discordBtn.TextSize = 14
 	discordBtn.BorderSizePixel = 0
