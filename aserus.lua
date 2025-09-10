@@ -312,7 +312,7 @@ addChannel("Information", function()
 	description.Size = UDim2.new(1,-10,0,200)
 	description.Position = UDim2.new(0,0,0,0)
 	description.BackgroundTransparency = 1
-	description.Text = "Local Admin Panel for Brookhaven.\n\n• People: lista graczy, TP i View (live)\n• Fun: suwak WalkSpeed / JumpPower (lokalnie)\n• FE Scripts: Infinite Yield\n\nUwaga: Brookhaven blokuje serwerowe akcje (fling, zmiana cudzej nazwy)."
+	description.Text = "Local Admin Panel for Brookhaven.\n\n• People: lista graczy, TP i View (live)\n• Fun: suwak WalkSpeed / JumpPower (lokalnie)\n• FE Scripts: Infinite Yield\n\njoin our discord: discord.gg/bdGpY6EPB5"
 	description.TextColor3 = Color3.fromRGB(230,235,255)
 	description.TextWrapped = true
 	description.Font = Enum.Font.Gotham
@@ -368,7 +368,7 @@ addChannel("People", function()
 	search.Size = UDim2.new(0.6,-10,1,-10)
 	search.Position = UDim2.new(0,8,0,5)
 	search.BackgroundColor3 = Color3.fromRGB(34, 38, 70)
-	search.PlaceholderText = "Szukaj gracza (fragment nicku/display)"
+	search.PlaceholderText = "Search for a player"
 	search.Text = ""
 	search.TextColor3 = Color3.fromRGB(255,255,255)
 	search.PlaceholderColor3 = Color3.fromRGB(200,205,215)
